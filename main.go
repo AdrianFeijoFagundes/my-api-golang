@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/adrian-feijo-fagundes/my-api-golang/db"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -32,21 +33,27 @@ func getAllStudents(c echo.Context) error {
 	return c.String(http.StatusOK, "List of all students\n")
 }
 func createStudent(c echo.Context) error {
+	student := db.Student{}
+	if err := c.Bind(student); err != nil {
+		return err
+	}
+	db.AddStudent(student)
+
 	return c.String(http.StatusOK, "Create students\n")
 }
 func getStudent(c echo.Context) error {
 	id := c.Param("id") // Pega o parametro que foi passado
-	message := "GET" + getId(id)
+	message := "GET " + getId(id)
 	return c.String(http.StatusOK, message)
 }
 func updateStudent(c echo.Context) error {
 	id := c.Param("id")
-	message := "UPDATE" + getId(id)
+	message := "UPDATE " + getId(id)
 	return c.String(http.StatusOK, message)
 }
 func deleteStudent(c echo.Context) error {
 	id := c.Param("id")
-	message := "DELETE" + getId(id)
+	message := "DELETE " + getId(id)
 	return c.String(http.StatusOK, message)
 }
 
