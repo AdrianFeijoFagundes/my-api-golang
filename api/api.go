@@ -20,7 +20,7 @@ func NewServer() *API {
 	e.Use(middleware.Recover())
 
 	database := db.Init()
-	studentDB := db.NewStundentHandler(database)
+	studentDB := db.NewStudentHandler(database)
 
 	return &API{Echo: e, DB: studentDB}
 }
