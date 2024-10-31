@@ -1,11 +1,13 @@
 package api
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/adrian-feijo-fagundes/my-api-golang/db"
 	"github.com/labstack/echo"
+	"gorm.io/gorm"
 )
 
 func (api *API) getStudents(c echo.Context) error {
@@ -27,21 +29,24 @@ func (api *API) createStudent(c echo.Context) error {
 	return c.String(http.StatusOK, "Create students\n")
 }
 func (api *API) getStudent(c echo.Context) error {
-	id := c.Param("id") // Pega o parametro que foi passado
-	message := "GET " + getId(id)
-	return c.String(http.StatusOK, message)
+	id, err := strconv.Atoi(c.Param("id")) // Pega o parametro que foi passado
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Failed to get student ID")
+	}
+	student, err := api.DB.GetStudent(id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return c.String(http.StatusNotFound, "Student id not found")
+	}
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Failed to get student")
+	}
+	return c.JSON(http.StatusOK, student)
 }
 func (api *API) updateStudent(c echo.Context) error {
-	id := c.Param("id")
-	message := "UPDATE " + getId(id)
-	return c.String(http.StatusOK, message)
+
+	return c.String(http.StatusOK, "")
 }
 func (api *API) deleteStudent(c echo.Context) error {
-	id := c.Param("id")
-	message := "DELETE " + getId(id)
-	return c.String(http.StatusOK, message)
-}
 
-func getId(id string) string {
-	return fmt.Sprintf("%s student \n", id)
+	return c.String(http.StatusOK, "")
 }
