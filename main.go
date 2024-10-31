@@ -1,68 +1,15 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
+	"log"
 
-	"github.com/adrian-feijo-fagundes/my-api-golang/db"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/adrian-feijo-fagundes/my-api-golang/api"
 )
 
 func main() {
-	// Echo instance
-	e := echo.New()
-
-	// Middleware
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-
-	// Routes
-	e.GET("/students", getStudents)
-	e.POST("/students", createStudent)
-	e.GET("/students/:id", getStudent)
-	e.PUT("/students/:id", updateStudent)
-	e.DELETE("/students/:id", deleteStudent)
-
-	// Start server
-	e.Logger.Fatal(e.Start(":8080"))
-}
-
-// Handler
-func getStudents(c echo.Context) error {
-	students, err := db.GetStudents()
-	if err != nil {
-		return c.String(http.StatusNotFound, "Failed to get students")
+	server := api.NewServer()
+	server.ConfigureRoutes()
+	if err := server.Start(); err != nil {
+		log.Fatal(err)
 	}
-	return c.JSON(http.StatusOK, students)
-}
-func createStudent(c echo.Context) error {
-	student := db.Student{}
-	if err := c.Bind(&student); err != nil {
-		return err
-	}
-	if err := db.AddStudent(student); err != nil { // FORMA "simplificada de tratar um erro"
-		return c.String(http.StatusInternalServerError, "Error to create students\n")
-	}
-
-	return c.String(http.StatusOK, "Create students\n")
-}
-func getStudent(c echo.Context) error {
-	id := c.Param("id") // Pega o parametro que foi passado
-	message := "GET " + getId(id)
-	return c.String(http.StatusOK, message)
-}
-func updateStudent(c echo.Context) error {
-	id := c.Param("id")
-	message := "UPDATE " + getId(id)
-	return c.String(http.StatusOK, message)
-}
-func deleteStudent(c echo.Context) error {
-	id := c.Param("id")
-	message := "DELETE " + getId(id)
-	return c.String(http.StatusOK, message)
-}
-
-func getId(id string) string {
-	return fmt.Sprintf("%s student \n", id)
 }
