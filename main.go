@@ -18,7 +18,7 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// Routes
-	e.GET("/students", getAllStudents)
+	e.GET("/students", getStudents)
 	e.POST("/students", createStudent)
 	e.GET("/students/:id", getStudent)
 	e.PUT("/students/:id", updateStudent)
@@ -29,15 +29,19 @@ func main() {
 }
 
 // Handler
-func getAllStudents(c echo.Context) error {
-	return c.String(http.StatusOK, "List of all students\n")
+func getStudents(c echo.Context) error {
+	students, err := db.GetStudents()
+	if err != nil {
+		return c.String(http.StatusNotFound, "Failed to get students")
+	}
+	return c.JSON(http.StatusOK, students)
 }
 func createStudent(c echo.Context) error {
 	student := db.Student{}
-	if err := c.Bind(student); err != nil {
+	if err := c.Bind(&student); err != nil {
 		return err
 	}
-	if err := db.AddStudent(student); err != nil {
+	if err := db.AddStudent(student); err != nil { // FORMA "simplificada de tratar um erro"
 		return c.String(http.StatusInternalServerError, "Error to create students\n")
 	}
 
