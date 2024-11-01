@@ -26,7 +26,7 @@ func (api *API) createStudent(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Error to create students\n")
 	}
 
-	return c.String(http.StatusOK, "Success to Create Stundent\n")
+	return c.JSON(http.StatusOK, student)
 }
 func (api *API) getStudent(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id")) // Pega o parametro que foi passado
@@ -66,11 +66,24 @@ func (api *API) updateStudent(c echo.Context) error {
 	if err := api.DB.UpdateStudent(student); err != nil {
 		return c.String(http.StatusInternalServerError, "Failed to save student")
 	}
-	return c.String(http.StatusOK, "Success to Update student")
+	return c.JSON(http.StatusOK, student)
 }
 func (api *API) deleteStudent(c echo.Context) error {
-
-	return c.String(http.StatusOK, "")
+	id, err := strconv.Atoi(c.Param("id")) // Pega o parametro que foi passado
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Failed to get student ID")
+	}
+	student, err := api.DB.GetStudent(id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return c.String(http.StatusNotFound, "Student id not found")
+	}
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Failed to get student")
+	}
+	if err := api.DB.DeleteStudent(student); err != nil {
+		return c.String(http.StatusInternalServerError, "Failed to save student")
+	}
+	return c.JSON(http.StatusOK, student.Name)
 }
 
 func updateStudentInfo(receivedStudent, student db.Student) db.Student {
