@@ -7,6 +7,7 @@ import (
 
 	"github.com/adrian-feijo-fagundes/my-api-golang/schemas"
 	"github.com/labstack/echo"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
@@ -18,9 +19,21 @@ func (api *API) getStudents(c echo.Context) error {
 	return c.JSON(http.StatusOK, students)
 }
 func (api *API) createStudent(c echo.Context) error {
-	student := schemas.Student{}
-	if err := c.Bind(&student); err != nil {
+	studentReq := StudentRequest{}
+	if err := c.Bind(&studentReq); err != nil {
 		return err
+	}
+	if err := studentReq.Validate(); err != nil {
+		log.Error().Err(err).Msg("[api] error validating struct")
+		return c.String(http.StatusBadRequest, "Error validating student")
+	}
+
+	student := schemas.Student{
+		Name:   studentReq.Name,
+		CPF:    studentReq.CPF,
+		Email:  studentReq.Email,
+		Age:    studentReq.Age,
+		Active: *studentReq.Active,
 	}
 	if err := api.DB.AddStudent(student); err != nil { // FORMA "simplificada de tratar um erro"
 		return c.String(http.StatusInternalServerError, "Error to create students\n")
